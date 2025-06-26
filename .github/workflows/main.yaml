@@ -11,3 +11,7 @@ jobs:
     name: call reusable
     uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
     secrets: inherit
+  call-reusable2:
+    name: call reusable
+    uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
+    secrets: inherit
