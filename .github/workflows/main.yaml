@@ -1,4 +1,4 @@
-name: caller
+name: caller  
 
 on:
   workflow_dispatch:
@@ -12,6 +12,6 @@ jobs:
     uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
     secrets: inherit
   call-reusable2:
-    name: call reusable
+    name: call reusable2
     uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
     secrets: inherit
