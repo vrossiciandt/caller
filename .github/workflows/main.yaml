@@ -15,3 +15,8 @@ jobs:
     name: call reusable2
     uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
     secrets: inherit
+  bash-sleep:
+    name: bash-sleep
+    runs-on: ubuntu-latest
+    steps:
+      - run: bash -c "sleep 15"
