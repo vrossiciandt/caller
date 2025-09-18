@@ -15,16 +15,11 @@ jobs:
         id: add_mask
         run: |
           INP_SECRET=$(jq -r '.inputs.ultrasecretvalue' $GITHUB_EVENT_PATH)
-          echo $SECRET
+          echo $INP_SECRET
           echo SECRET="$INP_SECRET" >> $GITHUB_ENV
-      - name: Check output from another step
-        run: |
-          echo "${{ steps.add_mask.outputs.secret }}"
 
-      - name: Check environment variables 1
-        run: |
-          echo "${{ env.SECRET }}"
-
-      - name: Check environment variables 2
+      - name: Check environment variables
+        env:
+          TEST: ${{ env.SECRET }}
         run: |
           echo $SECRET
