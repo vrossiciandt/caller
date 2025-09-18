@@ -11,12 +11,20 @@ jobs:
   generate-secret:
     runs-on: ubuntu-latest
     steps:
-    - name: Mask
-      run: |
-        echo "::add-mask::${{ inputs.ultrasecretvalue }}"
-    - name: validate-secret
-      env:
-        SECRET: ${{ inputs.ultrasecretvalue }}
-      shell: bash
-      run: |
-        echo "$SECRET"
+      - name: Mask
+        id: add_mask
+        run: |
+          INP_SECRET=$(jq -r '.inputs.ultrasecretvalue' $GITHUB_EVENT_PATH)
+          echo $SECRET
+          echo SECRET="$INP_SECRET" >> $GITHUB_ENV
+      - name: Check output from another step
+        run: |
+          echo "${{ steps.add_mask.outputs.secret }}"
+
+      - name: Check environment variables 1
+        run: |
+          echo "${{ env.SECRET }}"
+
+      - name: Check environment variables 2
+        run: |
+          echo $SECRET
