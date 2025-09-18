@@ -11,14 +11,12 @@ jobs:
   generate-secret:
     runs-on: ubuntu-latest
     steps:
-    - name: generate-secret
-      shell: bash
+    - name: Mask
       run: |
-        the_secret=${{ inputs.ultrasecretvalue }}
-        echo "secret=$the_secret" >> "$GITHUB_OUTPUT"
+        echo "::add-mask::${{ inputs.ultrasecretvalue }}"
     - name: validate-secret
       env:
-        SECRET: "123123"
+        SECRET: ${{ inputs.ultrasecretvalue }}
       shell: bash
       run: |
         echo "$SECRET"
