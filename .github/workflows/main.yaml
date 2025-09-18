@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Mask
-        id: add_mask
         run: |
           ultrasecretvalue=$(jq -r '.inputs.ultrasecretvalue' $GITHUB_EVENT_PATH)
 
