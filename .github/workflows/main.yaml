@@ -6,6 +6,9 @@ on:
       ultrasecretvalue:
         description: 'Segredo não tão segredo assim'
         required: true
+      test:
+        description: 'test'
+        required: true
 
 jobs:
   generate-secret:
