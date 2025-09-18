@@ -23,7 +23,9 @@ jobs:
       - name: Check output from another step
         run: |
           echo "${{ github.event.inputs.ultrasecretvalue }}"
+          echo "${{ github.event.inputs.test }}"
 
       - name: Check environment variables 1
         run: |
           echo "${{ inputs.ultrasecretvalue }}"
+          echo "${{ inputs.test }}"
