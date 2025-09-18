@@ -18,7 +18,7 @@ jobs:
         echo "secret=$the_secret" >> "$GITHUB_OUTPUT"
     - name: validate-secret
       env:
-        SECRET: ${{ steps.generate-secret.outputs.secret }}
+        SECRET: "123123"
       shell: bash
       run: |
         echo "$SECRET"
