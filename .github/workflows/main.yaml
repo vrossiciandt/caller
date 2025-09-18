@@ -3,8 +3,8 @@ name: caller
 on:
   workflow_dispatch:
     inputs:
-      ultrasecrevalue:
-        description: 'Segredo não tão segredo assm'
+      ultrasecretvalue:
+        description: 'Segredo não tão segredo assim'
         required: true
 
 jobs:
