@@ -14,22 +14,13 @@ jobs:
       - name: Mask
         id: add_mask
         run: |
-          INP_SECRET=$(jq -r '.inputs.ultrasecretvalue' $GITHUB_EVENT_PATH)
+          ultrasecretvalue=$(jq -r '.inputs.ultrasecretvalue' $GITHUB_EVENT_PATH)
 
-          echo ::add-mask::$INP_SECRET
-
-
-          echo ULTRASECRETVALUE="$INP_SECRET" >> $GITHUB_ENV
+          echo ::add-mask::$ultrasecretvalue
       - name: Check output from another step
         run: |
-          echo "${{ steps.add_mask.outputs.ultrasecretvalue }}"
+          echo "${{ github.event.inputs.ultrasecretvalue }}"
 
       - name: Check environment variables 1
         run: |
-          echo "${{ env.ULTRASECRETVALUE }}"
-
-      - name: Check environment variables 2
-        env:
-          TE: ${{ env.ULTRASECRETVALUE }}
-        run: |
-          echo $ULTRASECRETVALUE
+          echo "${{ inputs.ultrasecretvalue }}"
