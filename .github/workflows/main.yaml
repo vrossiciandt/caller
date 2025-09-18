@@ -15,7 +15,6 @@ jobs:
       shell: bash
       run: |
         the_secret=${{ inputs.ultrasecretvalue }}
-        echo "::add-mask::$the_secret"
         echo "secret=$the_secret" >> "$GITHUB_OUTPUT"
     - name: validate-secret
       env:
