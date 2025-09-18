@@ -2,21 +2,24 @@ name: caller
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+    inputs:
+      ultrasecrevalue:
+        description: 'Segredo não tão segredo assm'
+        required: true
 
 jobs:
-  call-reusable:
-    name: call reusable
-    uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
-    secrets: inherit
-  call-reusable2:
-    name: call reusable2
-    uses: vrossiciandt/reusable/.github/workflows/reusable.yaml@main
-    secrets: inherit
-  bash-sleep:
-    name: bash-sleep
+  generate-secret:
     runs-on: ubuntu-latest
     steps:
-      - run: bash -c "sleep 15"
+    - name: generate-secret
+      shell: bash
+      run: |
+        the_secret=${{ inputs.ultrasecretvalue }}
+        echo "::add-mask::$the_secret"
+        echo "secret=$the_secret" >> "$GITHUB_OUTPUT"
+    - name: validate-secret
+      env:
+        SECRET: ${{ steps.generate-secret.outputs.secret }}
+      shell: bash
+      run: |
+        echo "test"
