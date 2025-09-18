@@ -21,4 +21,4 @@ jobs:
         SECRET: ${{ steps.generate-secret.outputs.secret }}
       shell: bash
       run: |
-        echo "${{ env.SECRET }}"
+        echo $SECRET"
