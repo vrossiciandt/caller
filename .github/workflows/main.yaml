@@ -27,24 +27,37 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
+      - name: checking-previous-outputs-b
+        id: verify-output-b
+        uses: LIT-Protocol/artifact-exists-action@v0
+        with:
+          name: job-a-artifact
+
       - name: Download artifact from Job A
         id: download-b
         uses: actions/download-artifact@v4
+        if: ${{ steps.verify-output-b.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
-        continue-on-error: true
 
       - name: Wait 2 and Last Try
-        if: steps.download-b.outcome == 'failure'
+        if: ${{ steps.verify-output-b.outputs.exists == 'false' }}
         run: |
           echo "::warning::Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
+
+      - name: checking-previous-outputs-c
+        id: verify-output-b-retry
+        uses: LIT-Protocol/artifact-exists-action@v0
+        if: ${{ steps.verify-output-b.outputs.exists == 'false' }}
+        with:
+          name: job-a-artifact
       
       - name: Download artifact from Job A
         uses: actions/download-artifact@v4
-        if: steps.download-b.outcome == 'failure'
+        if: ${{ steps.verify-output-b-retry.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
@@ -93,24 +106,37 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
+      - name: checking-previous-outputs-c
+        id: verify-output-c
+        uses: LIT-Protocol/artifact-exists-action@v0
+        with:
+          name: job-a-artifact
+
       - name: Download artifact from Job A
-        id: download-c
+        id: download-b
         uses: actions/download-artifact@v4
-        continue-on-error: true
+        if: ${{ steps.verify-output-c.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
 
       - name: Wait 2 and Last Try
-        if: steps.download-c.outcome == 'failure'
+        if: ${{ steps.verify-output-c.outputs.exists == 'false' }}
         run: |
           echo "::warning::Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
+      - name: checking-previous-outputs-c
+        id: verify-output-c-retry
+        uses: LIT-Protocol/artifact-exists-action@v0
+        if: ${{ steps.verify-output-c.outputs.exists == 'false' }}
+        with:
+          name: job-a-artifact
+      
       - name: Download artifact from Job A
         uses: actions/download-artifact@v4
-        if: steps.download-c.outcome == 'failure'
+        if: ${{ steps.verify-output-c-retry.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
