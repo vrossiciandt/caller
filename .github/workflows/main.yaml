@@ -44,9 +44,9 @@ jobs:
           echo "Job B processed this artifact at: $(date)" >> artifact-data/job-b-info.txt
           
       - name: Upload modified artifact
-	id: upload-b
+        id: upload-b
         uses: actions/upload-artifact@v4
-	continue-on-error: true
+        continue-on-error: true
         with:
           name: job-a-artifact
           path: artifact-data
@@ -92,9 +92,9 @@ jobs:
           echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
           
       - name: Upload modified artifact
-	id: upload-c
+        id: upload-c
         uses: actions/upload-artifact@v4
-	continue-on-error: true
+        continue-on-error: true
         with:
           name: job-a-artifact
           path: artifact-data
