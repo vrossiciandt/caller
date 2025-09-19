@@ -6,38 +6,32 @@ jobs:
     name: Job A - Generate Artifact
     runs-on: ubuntu-latest
     steps:
-      - name: checking-previous-outputs-a
-        id: verify-output-a
+      - name: Check if artifact exists
+        id: verify-output-b
         uses: LIT-Protocol/artifact-exists-action@v0
         with:
           name: job-a-artifact
 
-      - name: Download artifact from Job A
-        id: download-a
+      - name: Download artifact from Job A - first attempt
+        id: download-b
+        if: steps.verify-output-a.outputs.exists == 'true'
         uses: actions/download-artifact@v4
-        if: ${{ steps.verify-output-a.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
         continue-on-error: true
 
-      - name: Wait 2 and Last Try
-        if: steps.download-a.outcome == 'failure'
+      - name: Wait before retry
+        if: steps.verify-output-a.outputs.exists == 'true' && steps.download-a.outcome == 'failure'
         run: |
-          echo "Download error. Waiting 2 secs to next retry..."
+          echo "::warning::Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
-      - name: checking-previous-outputs-a-retry
-        id: verify-output-a-retry
-        uses: LIT-Protocol/artifact-exists-action@v0
-        if: steps.download-a.outcome == 'failure'
-        with:
-          name: job-a-artifact
-      
-      - name: Download artifact from Job A
+      - name: Download artifact from Job A - second attempt
+        id: download-a-retry
+        if: steps.verify-output-a.outputs.exists == 'true' && steps.download-a.outcome == 'failure'
         uses: actions/download-artifact@v4
-        if: ${{ steps.verify-output-a-retry.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
@@ -64,38 +58,32 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-      - name: checking-previous-outputs-b
+      - name: Check if artifact exists
         id: verify-output-b
         uses: LIT-Protocol/artifact-exists-action@v0
         with:
           name: job-a-artifact
 
-      - name: Download artifact from Job A
+      - name: Download artifact from Job A - first attempt
         id: download-b
+        if: steps.verify-output-b.outputs.exists == 'true'
         uses: actions/download-artifact@v4
-        if: ${{ steps.verify-output-b.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
         continue-on-error: true
 
-      - name: Wait 2 and Last Try
-        if: steps.download-b.outcome == 'failure'
+      - name: Wait before retry
+        if: steps.verify-output-b.outputs.exists == 'true' && steps.download-b.outcome == 'failure'
         run: |
-          echo "Download error. Waiting 2 secs to next retry..."
+          echo "::warning::Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
-      - name: checking-previous-outputs-b-retry
-        id: verify-output-b-retry
-        uses: LIT-Protocol/artifact-exists-action@v0
-        if: steps.download-b.outcome == 'failure'
-        with:
-          name: job-a-artifact
-      
-      - name: Download artifact from Job A
+      - name: Download artifact from Job A - second attempt
+        id: download-b-retry
+        if: steps.verify-output-b.outputs.exists == 'true' && steps.download-b.outcome == 'failure'
         uses: actions/download-artifact@v4
-        if: ${{ steps.verify-output-b-retry.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
@@ -104,14 +92,14 @@ jobs:
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job B:"
-          ls -la artifact-data/
+          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
       
       - name: Add Job B content
         run: |
           echo "This is a file added by Job B" > artifact-data/job-b-file.txt
           echo "Job B processed this artifact at: $(date)" >> artifact-data/job-b-info.txt
           
-      - name: Upload modified artifact
+      - name: Upload modified artifact - first attempt
         id: upload-b
         uses: actions/upload-artifact@v4
         continue-on-error: true
@@ -122,14 +110,14 @@ jobs:
           overwrite: true
           if-no-files-found: ignore
 
-      - name: Wait 2 and Last Try
+      - name: Wait before retry upload
         if: steps.upload-b.outcome == 'failure'
         run: |
           echo "::warning::Upload error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
-      - name: Upload modified artifact
+      - name: Upload modified artifact - second attempt
         if: steps.upload-b.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
@@ -144,38 +132,32 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-      - name: checking-previous-outputs-c
+      - name: Check if artifact exists
         id: verify-output-c
         uses: LIT-Protocol/artifact-exists-action@v0
         with:
           name: job-a-artifact
 
-      - name: Download artifact from Job A
-        id: download-b
+      - name: Download artifact from Job A - first attempt
+        id: download-c
+        if: steps.verify-output-c.outputs.exists == 'true'
         uses: actions/download-artifact@v4
-        if: ${{ steps.verify-output-c.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
         continue-on-error: true
 
-      - name: Wait 2 and Last Try
-        if: steps.download-c.outcome == 'failure'
+      - name: Wait before retry
+        if: steps.verify-output-c.outputs.exists == 'true' && steps.download-c.outcome == 'failure'
         run: |
-          echo "Download error. Waiting 2 secs to next retry..."
+          echo "::warning::Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
-      - name: checking-previous-outputs-c-retry
-        id: verify-output-c-retry
-        uses: LIT-Protocol/artifact-exists-action@v0
-        if: steps.download-c.outcome == 'failure'
-        with:
-          name: job-a-artifact
-      
-      - name: Download artifact from Job A
+      - name: Download artifact from Job A - second attempt
+        id: download-c-retry
+        if: steps.verify-output-c.outputs.exists == 'true' && steps.download-c.outcome == 'failure'
         uses: actions/download-artifact@v4
-        if: ${{ steps.verify-output-c-retry.outputs.exists == 'true' }}
         with:
           name: job-a-artifact
           path: artifact-data
@@ -184,14 +166,14 @@ jobs:
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job C:"
-          ls -la artifact-data/
+          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
       
       - name: Add Job C content
         run: |
           echo "This is a file added by Job C" > artifact-data/job-c-file.txt
           echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
           
-      - name: Upload modified artifact
+      - name: Upload modified artifact - first attempt
         id: upload-c
         uses: actions/upload-artifact@v4
         continue-on-error: true
@@ -202,14 +184,14 @@ jobs:
           overwrite: true
           if-no-files-found: ignore
 
-      - name: Wait 2 and Last Try
+      - name: Wait before retry upload
         if: steps.upload-c.outcome == 'failure'
         run: |
           echo "::warning::Upload error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
-      - name: Upload modified artifact
+      - name: Upload modified artifact - second attempt
         if: steps.upload-c.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
@@ -224,41 +206,69 @@ jobs:
     needs: [job-b, job-c]
     runs-on: ubuntu-latest
     steps:
-      - name: Download final artifact
+      - name: Check if artifact exists
+        id: verify-output-d
+        uses: LIT-Protocol/artifact-exists-action@v0
+        with:
+          name: job-a-artifact
+
+      - name: Download final artifact - first attempt
+        id: download-d
+        if: steps.verify-output-d.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
           path: final-data
+        continue-on-error: true
+
+      - name: Wait before retry
+        if: steps.verify-output-d.outputs.exists == 'true' && steps.download-d.outcome == 'failure'
+        run: |
+          echo "::warning::Download error. Waiting 2 secs to next retry..."
+          sleep 2
+        shell: bash
+
+      - name: Download final artifact - second attempt
+        if: steps.verify-output-d.outputs.exists == 'true' && steps.download-d.outcome == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: final-data
+        continue-on-error: true
       
       - name: Analyze final artifact content
         run: |
           echo "Final artifact contents:"
-          ls -la final-data/
+          ls -la final-data/ || echo "Directory is empty or doesn't exist"
           
-          echo ""
-          echo "Contents of files:"
-          cat final-data/*.txt
-          
-          echo ""
-          echo "Checking for expected files..."
-          
-          # Verificar arquivos do Job A
-          if [ -f "final-data/file1.txt" ] && [ -f "final-data/file2.txt" ]; then
-            echo "✅ Job A files present"
+          if [ -d "final-data" ] && [ "$(ls -A final-data 2>/dev/null)" ]; then
+            echo ""
+            echo "Contents of files:"
+            cat final-data/*.txt || echo "No text files found"
+            
+            echo ""
+            echo "Checking for expected files..."
+            
+            # Verificar arquivos do Job A
+            if [ -f "final-data/file1.txt" ] && [ -f "final-data/file2.txt" ]; then
+              echo "✅ Job A files present"
+            else
+              echo "❌ Job A files missing"
+            fi
+            
+            # Verificar arquivo do Job B
+            if [ -f "final-data/job-b-file.txt" ]; then
+              echo "✅ Job B file present"
+            else
+              echo "❌ Job B file missing"
+            fi
+            
+            # Verificar arquivo do Job C
+            if [ -f "final-data/job-c-file.txt" ]; then
+              echo "✅ Job C file present"
+            else
+              echo "❌ Job C file missing"
+            fi
           else
-            echo "❌ Job A files missing"
-          fi
-          
-          # Verificar arquivo do Job B
-          if [ -f "final-data/job-b-file.txt" ]; then
-            echo "✅ Job B file present"
-          else
-            echo "❌ Job B file missing"
-          fi
-          
-          # Verificar arquivo do Job C
-          if [ -f "final-data/job-c-file.txt" ]; then
-            echo "✅ Job C file present"
-          else
-            echo "❌ Job C file missing"
+            echo "::warning::No files to analyze"
           fi
