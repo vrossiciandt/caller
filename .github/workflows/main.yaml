@@ -72,6 +72,11 @@ jobs:
         run: |
           echo "This is a file added by Job C" > artifact-data/job-c-file.txt
           echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
+
+      - name: Wait 2 and Last Try
+        run: |
+          sleep 2
+        shell: bash
           
       - name: Upload modified artifact
         uses: actions/upload-artifact@v4
