@@ -24,7 +24,7 @@ jobs:
       - name: Wait 2 and Last Try
         if: ${{ steps.verify-output-a.outputs.exists == 'false' }}
         run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
+          echo "Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
@@ -82,7 +82,7 @@ jobs:
       - name: Wait 2 and Last Try
         if: ${{ steps.verify-output-b.outputs.exists == 'false' }}
         run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
+          echo "Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
@@ -162,7 +162,7 @@ jobs:
       - name: Wait 2 and Last Try
         if: ${{ steps.verify-output-c.outputs.exists == 'false' }}
         run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
+          echo "Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
