@@ -1,30 +1,121 @@
-name: caller  
-
+name: Artifact Demo
 on:
   workflow_dispatch:
-    inputs:
-      ultrasecretvalue:
-        description: 'Segredo não tão segredo assim'
-        required: true
-      test:
-        description: 'test'
-        required: true
-
 jobs:
-  generate-secret:
+  job-a:
+    name: Job A - Generate Artifact
     runs-on: ubuntu-latest
     steps:
-      - name: Mask
+      - name: Create test files
         run: |
-          ultrasecretvalue=$(jq -r '.inputs.ultrasecretvalue' $GITHUB_EVENT_PATH)
+          mkdir -p artifact-data
+          echo "This is file 1 from Job A" > artifact-data/file1.txt
+          echo "This is file 2 from Job A" > artifact-data/file2.txt
+          echo "Job A execution time: $(date)" > artifact-data/job-a-info.txt
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+          retention-days: 1
 
-          echo ::add-mask::$ultrasecretvalue
-      - name: Check output from another step
+  job-b:
+    name: Job B - Process Artifact
+    needs: job-a
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from Job A
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+      
+      - name: List downloaded files
         run: |
-          echo "${{ github.event.inputs.ultrasecretvalue }}"
-          echo "${{ github.event.inputs.test }}"
+          echo "Files downloaded in Job B:"
+          ls -la artifact-data/
+      
+      - name: Add Job B content
+        run: |
+          echo "This is a file added by Job B" > artifact-data/job-b-file.txt
+          echo "Job B processed this artifact at: $(date)" >> artifact-data/job-b-info.txt
+          
+      - name: Upload modified artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+          retention-days: 1
 
-      - name: Check environment variables 1
+  job-c:
+    name: Job C - Process Artifact
+    needs: job-a
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from Job A
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+      
+      - name: List downloaded files
         run: |
-          echo "${{ inputs.ultrasecretvalue }}"
-          echo "${{ inputs.test }}"
+          echo "Files downloaded in Job C:"
+          ls -la artifact-data/
+      
+      - name: Add Job C content
+        run: |
+          echo "This is a file added by Job C" > artifact-data/job-c-file.txt
+          echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
+          
+      - name: Upload modified artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+          retention-days: 1
+
+  job-d:
+    name: Job D - Final Processing
+    needs: [job-b, job-c]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download final artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: final-data
+      
+      - name: Analyze final artifact content
+        run: |
+          echo "Final artifact contents:"
+          ls -la final-data/
+          
+          echo ""
+          echo "Contents of files:"
+          cat final-data/*.txt
+          
+          echo ""
+          echo "Checking for expected files..."
+          
+          # Verificar arquivos do Job A
+          if [ -f "final-data/file1.txt" ] && [ -f "final-data/file2.txt" ]; then
+            echo "✅ Job A files present"
+          else
+            echo "❌ Job A files missing"
+          fi
+          
+          # Verificar arquivo do Job B
+          if [ -f "final-data/job-b-file.txt" ]; then
+            echo "✅ Job B file present"
+          else
+            echo "❌ Job B file missing"
+          fi
+          
+          # Verificar arquivo do Job C
+          if [ -f "final-data/job-c-file.txt" ]; then
+            echo "✅ Job C file present"
+          else
+            echo "❌ Job C file missing"
+          fi
