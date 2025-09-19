@@ -29,6 +29,7 @@ jobs:
     steps:
       - name: Download artifact from Job A
         id: download-b
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -93,6 +94,7 @@ jobs:
       - name: Download artifact from Job A
         id: download-c
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: job-a-artifact
           path: artifact-data
