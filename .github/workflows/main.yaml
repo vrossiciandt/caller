@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact from Job A
-	id: download-b
+        id: download-b
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact from Job A
-	id: download-c
+        id: download-c
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
