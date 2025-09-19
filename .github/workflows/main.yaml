@@ -19,6 +19,7 @@ jobs:
           name: job-a-artifact
           path: artifact-data
           retention-days: 1
+          overwrite: true
 
   job-b:
     name: Job B - Process Artifact
@@ -47,6 +48,7 @@ jobs:
           name: job-a-artifact
           path: artifact-data
           retention-days: 1
+          overwrite: true
 
   job-c:
     name: Job C - Process Artifact
@@ -75,6 +77,7 @@ jobs:
           name: job-a-artifact
           path: artifact-data
           retention-days: 1
+          overwrite: true
 
   job-d:
     name: Job D - Final Processing
