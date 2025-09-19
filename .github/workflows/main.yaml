@@ -28,11 +28,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact from Job A
+	id: download-b
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
           path: artifact-data
+
+      - name: Wait 2 and Last Try
+        if: steps.download-b.outcome == 'failure'
+        run: |
+          echo "::warning::Download error. Waiting 2 secs to next retry..."
+          sleep 2
+        shell: bash
       
+      - name: Download artifact from Job A
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job B:"
@@ -75,6 +88,20 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
+      - name: Download artifact from Job A
+	id: download-c
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+
+      - name: Wait 2 and Last Try
+        if: steps.download-c.outcome == 'failure'
+        run: |
+          echo "::warning::Download error. Waiting 2 secs to next retry..."
+          sleep 2
+        shell: bash
+
       - name: Download artifact from Job A
         uses: actions/download-artifact@v4
         with:
