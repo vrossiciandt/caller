@@ -46,6 +46,7 @@ jobs:
         with:
           name: job-a-artifact
           path: artifact-data
+
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job B:"
@@ -75,6 +76,7 @@ jobs:
         shell: bash
 
       - name: Upload modified artifact
+        if: steps.upload-b.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: job-a-artifact
@@ -137,6 +139,7 @@ jobs:
         shell: bash
 
       - name: Upload modified artifact
+        if: steps.upload-c.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: job-a-artifact
