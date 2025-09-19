@@ -20,6 +20,7 @@ jobs:
           path: artifact-data
           retention-days: 1
           overwrite: true
+          if-no-files-found: ignore
 
   job-b:
     name: Job B - Process Artifact
@@ -49,6 +50,7 @@ jobs:
           path: artifact-data
           retention-days: 1
           overwrite: true
+          if-no-files-found: ignore
 
   job-c:
     name: Job C - Process Artifact
@@ -78,6 +80,7 @@ jobs:
           path: artifact-data
           retention-days: 1
           overwrite: true
+          if-no-files-found: ignore
 
   job-d:
     name: Job D - Final Processing
