@@ -22,7 +22,7 @@ jobs:
         continue-on-error: true
 
       - name: Wait 2 and Last Try
-        if: ${{ steps.verify-output-a.outputs.exists == 'false' }}
+        if: steps.download-a.outcome == 'failure'
         run: |
           echo "Download error. Waiting 2 secs to next retry..."
           sleep 2
@@ -31,7 +31,7 @@ jobs:
       - name: checking-previous-outputs-a-retry
         id: verify-output-a-retry
         uses: LIT-Protocol/artifact-exists-action@v0
-        if: ${{ steps.verify-output-a.outputs.exists == 'false' }}
+        if: steps.download-a.outcome == 'failure'
         with:
           name: job-a-artifact
       
@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
 
       - name: Wait 2 and Last Try
-        if: ${{ steps.verify-output-b.outputs.exists == 'false' }}
+        if: steps.download-b.outcome == 'failure'
         run: |
           echo "Download error. Waiting 2 secs to next retry..."
           sleep 2
@@ -89,7 +89,7 @@ jobs:
       - name: checking-previous-outputs-b-retry
         id: verify-output-b-retry
         uses: LIT-Protocol/artifact-exists-action@v0
-        if: ${{ steps.verify-output-b.outputs.exists == 'false' }}
+        if: steps.download-b.outcome == 'failure'
         with:
           name: job-a-artifact
       
@@ -160,7 +160,7 @@ jobs:
         continue-on-error: true
 
       - name: Wait 2 and Last Try
-        if: ${{ steps.verify-output-c.outputs.exists == 'false' }}
+        if: steps.download-c.outcome == 'failure'
         run: |
           echo "Download error. Waiting 2 secs to next retry..."
           sleep 2
@@ -169,7 +169,7 @@ jobs:
       - name: checking-previous-outputs-c-retry
         id: verify-output-c-retry
         uses: LIT-Protocol/artifact-exists-action@v0
-        if: ${{ steps.verify-output-c.outputs.exists == 'false' }}
+        if: steps.download-c.outcome == 'failure'
         with:
           name: job-a-artifact
       
