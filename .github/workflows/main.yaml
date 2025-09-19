@@ -28,9 +28,16 @@ jobs:
           sleep 2
         shell: bash
 
+      - name: Check if artifact exists retry
+        id: verify-output-a-retry
+        uses: LIT-Protocol/artifact-exists-action@v0
+        if: steps.verify-output-a.outputs.exists == 'false' || steps.download-a.outcome == 'failure'
+        with:
+          name: job-a-artifact
+
       - name: Download artifact from Job A - second attempt
         id: download-a-retry
-        if: steps.verify-output-a.outputs.exists == 'false' || steps.download-a.outcome == 'failure'
+        if: steps.verify-output-a-retry.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -80,9 +87,16 @@ jobs:
           sleep 2
         shell: bash
 
+      - name: Check if artifact exists retry
+        id: verify-output-b-retry
+        uses: LIT-Protocol/artifact-exists-action@v0
+        if: steps.verify-output-b.outputs.exists == 'false' || steps.download-b.outcome == 'failure'
+        with:
+          name: job-a-artifact
+
       - name: Download artifact from Job A - second attempt
         id: download-b-retry
-        if: steps.verify-output-b.outputs.exists == 'false' || steps.download-b.outcome == 'failure'
+        if: steps.verify-output-b-retry.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -154,9 +168,16 @@ jobs:
           sleep 2
         shell: bash
 
+      - name: Check if artifact exists retry
+        id: verify-output-c-retry
+        uses: LIT-Protocol/artifact-exists-action@v0
+        if: steps.verify-output-c.outputs.exists == 'false' || steps.download-c.outcome == 'failure'
+        with:
+          name: job-a-artifact
+
       - name: Download artifact from Job A - second attempt
         id: download-c-retry
-        if: steps.verify-output-c.outputs.exists == 'false' || steps.download-c.outcome == 'failure'
+        if: steps.verify-output-c-retry.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
