@@ -29,7 +29,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: job-a
+          name: integration-manager/job-a
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -55,13 +55,14 @@ jobs:
       
       - name: Add Job B content
         run: |
+          mkdir -p artifact-data
           echo "This is a file added by Job B" > artifact-data/job-b-file.txt
           echo "Job B processed this artifact at: $(date)" >> artifact-data/job-b-info.txt
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: job-b
+          name: integration-manager/job-b
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -87,14 +88,14 @@ jobs:
       
       - name: Add Job C content
         run: |
-          mdir -p artifact-data
+          mkdir -p artifact-data
           echo "This is a file added by Job C" > artifact-data/job-c-file.txt
           echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: job-c
+          name: integration-manager/job-c
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
