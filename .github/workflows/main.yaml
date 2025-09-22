@@ -6,21 +6,6 @@ jobs:
     name: Job A - Generate Artifact
     runs-on: ubuntu-latest
     steps:
-
-      - name: Wait before retry
-        run: |
-          echo "Waiting 2 secs..."
-          sleep 2
-        shell: bash
-
-      - name: Download artifact from Job A
-        id: download-a
-        uses: actions/download-artifact@v4
-        with:
-          name: job-a-artifact
-          path: artifact-data
-        continue-on-error: true
-
       - name: Create test files
         run: |
           mkdir -p artifact-data
@@ -112,19 +97,38 @@ jobs:
           name: job-a-artifact
           path: artifact-data
         continue-on-error: true
+
+  job-d:
+    name: Job D - Process Artifact
+    needs: job-a
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait before retry
+        run: |
+          echo "Waiting 2 secs..."
+          sleep 2
+        shell: bash
+
+      - name: Download artifact from Job A
+        id: download-d
+        uses: actions/download-artifact@v4
+        with:
+          name: job-a-artifact
+          path: artifact-data
+        continue-on-error: true
       
       - name: List downloaded files
         run: |
-          echo "Files downloaded in Job C:"
+          echo "Files downloaded in Job D:"
           ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
       
-      - name: Add Job C content
+      - name: Add Job D content
         run: |
-          echo "This is a file added by Job C" > artifact-data/job-c-file.txt
-          echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
+          echo "This is a file added by Job D" > artifact-data/job-d-file.txt
+          echo "Job D processed this artifact at: $(date)" >> artifact-data/job-d-info.txt
           
       - name: Upload modified artifact - first attempt
-        id: upload-c
+        id: upload-d
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
@@ -135,14 +139,14 @@ jobs:
           if-no-files-found: ignore
 
       - name: Wait before retry upload
-        if: steps.upload-c.outcome == 'failure'
+        if: steps.upload-d.outcome == 'failure'
         run: |
           echo "::warning::Upload error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
       - name: Upload modified artifact - second attempt
-        if: steps.upload-c.outcome == 'failure'
+        if: steps.upload-d.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: job-a-artifact
@@ -151,20 +155,20 @@ jobs:
           overwrite: true
           if-no-files-found: ignore
 
-  job-d:
-    name: Job D - Final Processing
-    needs: [job-b, job-c]
+  job-e:
+    name: Job E - Final Processing
+    needs: [job-b, job-c, job-d]
     runs-on: ubuntu-latest
     steps:
       - name: Check if artifact exists
-        id: verify-output-d
+        id: verify-output-e
         uses: LIT-Protocol/artifact-exists-action@v0
         with:
           name: job-a-artifact
 
       - name: Download final artifact - first attempt
-        id: download-d
-        if: steps.verify-output-d.outputs.exists == 'true'
+        id: download-e
+        if: steps.verify-output-e.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -172,14 +176,14 @@ jobs:
         continue-on-error: true
 
       - name: Wait before retry
-        if: steps.verify-output-d.outputs.exists == 'true' && steps.download-d.outcome == 'failure'
+        if: steps.verify-output-e.outputs.exists == 'true' && steps.download-e.outcome == 'failure'
         run: |
           echo "::warning::Download error. Waiting 2 secs to next retry..."
           sleep 2
         shell: bash
 
       - name: Download final artifact - second attempt
-        if: steps.verify-output-d.outputs.exists == 'true' && steps.download-d.outcome == 'failure'
+        if: steps.verify-output-e.outputs.exists == 'true' && steps.download-e.outcome == 'failure'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -218,6 +222,12 @@ jobs:
               echo "✅ Job C file present"
             else
               echo "❌ Job C file missing"
+            fi
+            # Verificar arquivo do Job D
+            if [ -f "final-data/job-d-file.txt" ]; then
+              echo "✅ Job D file present"
+            else
+              echo "❌ Job D file missing"
             fi
           else
             echo "::warning::No files to analyze"
