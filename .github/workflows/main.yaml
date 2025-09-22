@@ -54,7 +54,6 @@ jobs:
         with:
           name: job-a-artifact
           path: artifact-data
-        continue-on-error: true
 
       - name: List downloaded files
         run: |
