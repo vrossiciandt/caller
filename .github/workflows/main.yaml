@@ -29,7 +29,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager/job-a
+          name: integration-manager-job-a
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -62,7 +62,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager/job-b
+          name: integration-manager-job-b
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -95,7 +95,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager/job-c
+          name: integration-manager-job-c
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
