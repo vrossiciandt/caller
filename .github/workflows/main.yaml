@@ -16,7 +16,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ inputs.app-name }}/*
+          pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
 
       - name: Create test files
@@ -42,7 +42,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ inputs.app-name }}/*
+          pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
 
       - name: List downloaded files
@@ -75,7 +75,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ inputs.app-name }}/*
+          pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
       
       - name: List downloaded files
