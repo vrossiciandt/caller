@@ -15,7 +15,7 @@ jobs:
       - name: Download artifact from Job A
         id: download-a
         if: steps.verify-output-a.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: job-a-artifact
           path: artifact-data
@@ -50,7 +50,7 @@ jobs:
       - name: Download artifact from Job A
         id: download-b
         if: steps.verify-output-b.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: job-a-artifact
           path: artifact-data
@@ -107,7 +107,7 @@ jobs:
       - name: Download artifact from Job A
         id: download-c
         if: steps.verify-output-c.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: job-a-artifact
           path: artifact-data
@@ -164,7 +164,7 @@ jobs:
       - name: Download final artifact
         id: download-d
         if: steps.verify-output-d.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: job-a-artifact
           path: final-data
