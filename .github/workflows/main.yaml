@@ -100,7 +100,7 @@ jobs:
     steps:
       - name: Wait
         run: |
-          echo "Waiting 1 secs..."
+          echo "Waiting 2 secs..."
           sleep 2
         shell: bash
 
