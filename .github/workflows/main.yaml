@@ -12,37 +12,13 @@ jobs:
         with:
           name: job-a-artifact
 
-      - name: Download artifact from Job A - first attempt
+      - name: Download artifact from Job A
         id: download-a
         if: steps.verify-output-a.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
           path: artifact-data
-        continue-on-error: true
-
-      - name: Wait before retry
-        if: steps.verify-output-a.outputs.exists == 'false' || steps.download-a.outcome == 'failure'
-        run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Check if artifact exists retry
-        id: verify-output-a-retry
-        uses: LIT-Protocol/artifact-exists-action@v0
-        if: steps.verify-output-a.outputs.exists == 'false' || steps.download-a.outcome == 'failure'
-        with:
-          name: job-a-artifact
-
-      - name: Download artifact from Job A - second attempt
-        id: download-a-retry
-        if: steps.verify-output-a-retry.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: job-a-artifact
-          path: artifact-data
-        continue-on-error: true
 
       - name: Create test files
         run: |
@@ -71,32 +47,9 @@ jobs:
         with:
           name: job-a-artifact
 
-      - name: Download artifact from Job A - first attempt
+      - name: Download artifact from Job A
         id: download-b
         if: steps.verify-output-b.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: job-a-artifact
-          path: artifact-data
-        continue-on-error: true
-
-      - name: Wait before retry
-        if: steps.verify-output-b.outputs.exists == 'false' || steps.download-b.outcome == 'failure'
-        run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Check if artifact exists retry
-        id: verify-output-b-retry
-        uses: LIT-Protocol/artifact-exists-action@v0
-        if: steps.verify-output-b.outputs.exists == 'false' || steps.download-b.outcome == 'failure'
-        with:
-          name: job-a-artifact
-
-      - name: Download artifact from Job A - second attempt
-        id: download-b-retry
-        if: steps.verify-output-b-retry.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
@@ -152,37 +105,13 @@ jobs:
         with:
           name: job-a-artifact
 
-      - name: Download artifact from Job A - first attempt
+      - name: Download artifact from Job A
         id: download-c
         if: steps.verify-output-c.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
           path: artifact-data
-        continue-on-error: true
-
-      - name: Wait before retry
-        if: steps.verify-output-c.outputs.exists == 'false' || steps.download-c.outcome == 'failure'
-        run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Check if artifact exists retry
-        id: verify-output-c-retry
-        uses: LIT-Protocol/artifact-exists-action@v0
-        if: steps.verify-output-c.outputs.exists == 'false' || steps.download-c.outcome == 'failure'
-        with:
-          name: job-a-artifact
-
-      - name: Download artifact from Job A - second attempt
-        id: download-c-retry
-        if: steps.verify-output-c-retry.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: job-a-artifact
-          path: artifact-data
-        continue-on-error: true
       
       - name: List downloaded files
         run: |
@@ -233,29 +162,13 @@ jobs:
         with:
           name: job-a-artifact
 
-      - name: Download final artifact - first attempt
+      - name: Download final artifact
         id: download-d
         if: steps.verify-output-d.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
           path: final-data
-        continue-on-error: true
-
-      - name: Wait before retry
-        if: steps.verify-output-d.outputs.exists == 'true' && steps.download-d.outcome == 'failure'
-        run: |
-          echo "::warning::Download error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Download final artifact - second attempt
-        if: steps.verify-output-d.outputs.exists == 'true' && steps.download-d.outcome == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: job-a-artifact
-          path: final-data
-        continue-on-error: true
       
       - name: Analyze final artifact content
         run: |
