@@ -16,7 +16,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ inputs.app-name }}-*
+          pattern: ${{ inputs.app-name }}/*
           merge-multiple: true
 
       - name: Create test files
@@ -29,7 +29,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.app-name }}-job-a
+          name: job-a
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -42,12 +42,15 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ inputs.app-name }}-*
+          pattern: ${{ inputs.app-name }}/*
           merge-multiple: true
 
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job B:"
+          ls -la
+          tree
+          echo "#============="
           ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
       
       - name: Add Job B content
@@ -58,7 +61,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.app-name }}-job-b
+          name: job-b
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -71,23 +74,27 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ inputs.app-name }}-*
+          pattern: ${{ inputs.app-name }}/*
           merge-multiple: true
       
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job C:"
+          ls -la
+          tree
+          echo "#============="
           ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
       
       - name: Add Job C content
         run: |
+          mdir -p artifact-data
           echo "This is a file added by Job C" > artifact-data/job-c-file.txt
           echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.app-name }}-job-c
+          name: job-c
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
