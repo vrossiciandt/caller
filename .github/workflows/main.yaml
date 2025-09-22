@@ -98,12 +98,6 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-      - name: Wait
-        run: |
-          echo "Waiting 3 secs..."
-          sleep 3
-        shell: bash
-
       - name: Check if artifact exists
         id: verify-output-c
         uses: LIT-Protocol/artifact-exists-action@v0
