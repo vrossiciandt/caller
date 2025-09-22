@@ -100,8 +100,8 @@ jobs:
     steps:
       - name: Wait
         run: |
-          echo "Waiting 2 secs..."
-          sleep 2
+          echo "Waiting 1 secs..."
+          sleep 1
         shell: bash
 
       - name: Check if artifact exists
