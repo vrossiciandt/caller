@@ -72,6 +72,10 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
+      - name: Wait
+        run: |
+          sleep 2
+
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
@@ -115,6 +119,8 @@ jobs:
       - name: Analyze final artifact content
         run: |
           echo "Final artifact contents:"
+          tree
+          echo "#========================================="
           ls -la final-data/ || echo "Directory is empty or doesn't exist"
           
           if [ -d "final-data" ] && [ "$(ls -A final-data 2>/dev/null)" ]; then
