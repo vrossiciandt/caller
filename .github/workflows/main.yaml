@@ -94,66 +94,9 @@ jobs:
           overwrite: true
           if-no-files-found: ignore
 
-  job-c:
-    name: Job C - Process Artifact
-    needs: job-a
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait before retry
-        run: |
-          echo "Waiting 2 secs..."
-          sleep 2
-        shell: bash
-
-      - name: Download artifact from Job A
-        id: download-c
-        uses: actions/download-artifact@v4
-        with:
-          name: job-a-artifact
-          path: artifact-data
-        continue-on-error: true
-      
-      - name: List downloaded files
-        run: |
-          echo "Files downloaded in Job C:"
-          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
-      
-      - name: Add Job C content
-        run: |
-          echo "This is a file added by Job C" > artifact-data/job-c-file.txt
-          echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
-          
-      - name: Upload modified artifact - first attempt
-        id: upload-c
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: job-a-artifact
-          path: artifact-data
-          retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
-
-      - name: Wait before retry upload
-        if: steps.upload-c.outcome == 'failure'
-        run: |
-          echo "::warning::Upload error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Upload modified artifact - second attempt
-        if: steps.upload-c.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: job-a-artifact
-          path: artifact-data
-          retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
-
   job-d:
     name: Job D - Final Processing
-    needs: [job-b, job-c]
+    needs: [job-b]
     runs-on: ubuntu-latest
     steps:
       - name: Check if artifact exists
