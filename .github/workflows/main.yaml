@@ -1,25 +1,12 @@
-name: Artifact Demo
+name: Artifact Demo - Immutable Artifacts
 on:
   workflow_dispatch:
+
 jobs:
   job-a:
-    name: Job A - Generate Artifact
+    name: Job A - Generate Base Artifact
     runs-on: ubuntu-latest
     steps:
-      - name: Check if artifact exists
-        id: verify-output-a
-        uses: LIT-Protocol/artifact-exists-action@v0
-        with:
-          name: job-a-artifact
-
-      - name: Download artifact from Job A
-        id: download-a
-        if: steps.verify-output-a.outputs.exists == 'true'
-        uses: actions/download-artifact@v5
-        with:
-          name: job-a-artifact
-          path: artifact-data
-
       - name: Create test files
         run: |
           mkdir -p artifact-data
@@ -33,175 +20,159 @@ jobs:
           name: job-a-artifact
           path: artifact-data
           retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   job-b:
-    name: Job B - Process Artifact
+    name: Job B - Process and Create Job B Artifact
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-      - name: Check if artifact exists
-        id: verify-output-b
-        uses: LIT-Protocol/artifact-exists-action@v0
-        with:
-          name: job-a-artifact
-
       - name: Download artifact from Job A
-        id: download-b
-        if: steps.verify-output-b.outputs.exists == 'true'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
-          path: artifact-data
-
-      - name: List downloaded files
-        run: |
-          echo "Files downloaded in Job B:"
-          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
+          path: input-data
       
-      - name: Add Job B content
+      - name: Create output directory
+        run: mkdir -p job-b-output
+      
+      - name: Process data
         run: |
-          echo "This is a file added by Job B" > artifact-data/job-b-file.txt
-          echo "Job B processed this artifact at: $(date)" >> artifact-data/job-b-info.txt
+          echo "Files downloaded from Job A:"
+          ls -la input-data/
           
-      - name: Upload modified artifact - first attempt
-        id: upload-b
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: job-a-artifact
-          path: artifact-data
-          retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
-
-      - name: Wait before retry upload
-        if: steps.upload-b.outcome == 'failure'
-        run: |
-          echo "::warning::Upload error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Upload modified artifact - second attempt
-        if: steps.upload-b.outcome == 'failure'
+          # Gerar conteúdo do Job B
+          echo "This is a file added by Job B" > job-b-output/job-b-file.txt
+          echo "Job B processed at: $(date)" > job-b-output/job-b-info.txt
+          
+          # Log de processamento
+          echo "Job B processed Job A artifacts at $(date)" >> job-b-output/processing-log.txt
+      
+      - name: Upload Job B artifact
         uses: actions/upload-artifact@v4
         with:
-          name: job-a-artifact
-          path: artifact-data
+          name: job-b-artifact
+          path: job-b-output
           retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   job-c:
-    name: Job C - Process Artifact
+    name: Job C - Process and Create Job C Artifact
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-      - name: Check if artifact exists
-        id: verify-output-c
-        uses: LIT-Protocol/artifact-exists-action@v0
-        with:
-          name: job-a-artifact
-
       - name: Download artifact from Job A
-        id: download-c
-        if: steps.verify-output-c.outputs.exists == 'true'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
-          path: artifact-data
+          path: input-data
       
-      - name: List downloaded files
-        run: |
-          echo "Files downloaded in Job C:"
-          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
+      - name: Create output directory
+        run: mkdir -p job-c-output
       
-      - name: Add Job C content
+      - name: Process data
         run: |
-          echo "This is a file added by Job C" > artifact-data/job-c-file.txt
-          echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
+          echo "Files downloaded from Job A:"
+          ls -la input-data/
           
-      - name: Upload modified artifact - first attempt
-        id: upload-c
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: job-a-artifact
-          path: artifact-data
-          retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
-
-      - name: Wait before retry upload
-        if: steps.upload-c.outcome == 'failure'
-        run: |
-          echo "::warning::Upload error. Waiting 2 secs to next retry..."
-          sleep 2
-        shell: bash
-
-      - name: Upload modified artifact - second attempt
-        if: steps.upload-c.outcome == 'failure'
+          # Gerar conteúdo do Job C
+          echo "This is a file added by Job C" > job-c-output/job-c-file.txt
+          echo "Job C processed at: $(date)" > job-c-output/job-c-info.txt
+          
+          # Log de processamento
+          echo "Job C processed Job A artifacts at $(date)" >> job-c-output/processing-log.txt
+      
+      - name: Upload Job C artifact
         uses: actions/upload-artifact@v4
         with:
-          name: job-a-artifact
-          path: artifact-data
+          name: job-c-artifact
+          path: job-c-output
           retention-days: 1
-          overwrite: true
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   job-d:
-    name: Job D - Final Processing
+    name: Job D - Final Processing of All Artifacts
     needs: [job-b, job-c]
     runs-on: ubuntu-latest
     steps:
-      - name: Check if artifact exists
-        id: verify-output-d
-        uses: LIT-Protocol/artifact-exists-action@v0
+      - name: Download Job A artifact
+        uses: actions/download-artifact@v4
         with:
           name: job-a-artifact
-
-      - name: Download final artifact
-        id: download-d
-        if: steps.verify-output-d.outputs.exists == 'true'
-        uses: actions/download-artifact@v5
-        with:
-          name: job-a-artifact
-          path: final-data
+          path: final/job-a
       
-      - name: Analyze final artifact content
+      - name: Download Job B artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-b-artifact
+          path: final/job-b
+      
+      - name: Download Job C artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: job-c-artifact
+          path: final/job-c
+      
+      - name: Analyze final artifacts content
         run: |
-          echo "Final artifact contents:"
-          ls -la final-data/ || echo "Directory is empty or doesn't exist"
+          echo "=== Final Artifact Structure ==="
+          echo "Directory structure:"
+          find final -type f | sort
           
-          if [ -d "final-data" ] && [ "$(ls -A final-data 2>/dev/null)" ]; then
-            echo ""
-            echo "Contents of files:"
-            cat final-data/*.txt || echo "No text files found"
-            
-            echo ""
-            echo "Checking for expected files..."
-            
-            # Verificar arquivos do Job A
-            if [ -f "final-data/file1.txt" ] && [ -f "final-data/file2.txt" ]; then
-              echo "✅ Job A files present"
-            else
-              echo "❌ Job A files missing"
-            fi
-            
-            # Verificar arquivo do Job B
-            if [ -f "final-data/job-b-file.txt" ]; then
-              echo "✅ Job B file present"
-            else
-              echo "❌ Job B file missing"
-            fi
-            
-            # Verificar arquivo do Job C
-            if [ -f "final-data/job-c-file.txt" ]; then
-              echo "✅ Job C file present"
-            else
-              echo "❌ Job C file missing"
-            fi
+          echo -e "\n=== Job A Artifact Contents ==="
+          ls -la final/job-a/
+          
+          echo -e "\n=== Job B Artifact Contents ==="
+          ls -la final/job-b/
+          
+          echo -e "\n=== Job C Artifact Contents ==="
+          ls -la final/job-c/
+          
+          echo -e "\n=== Files from Job A ==="
+          cat final/job-a/*.txt
+          
+          echo -e "\n=== Files from Job B ==="
+          cat final/job-b/*.txt
+          
+          echo -e "\n=== Files from Job C ==="
+          cat final/job-c/*.txt
+          
+          echo -e "\n=== Artifact Validation ==="
+          
+          # Verificar arquivos do Job A
+          if [ -f "final/job-a/file1.txt" ] && [ -f "final/job-a/file2.txt" ]; then
+            echo "✅ Job A files present"
           else
-            echo "::warning::No files to analyze"
+            echo "❌ Job A files missing"
           fi
+          
+          # Verificar arquivo do Job B
+          if [ -f "final/job-b/job-b-file.txt" ]; then
+            echo "✅ Job B file present"
+          else
+            echo "❌ Job B file missing"
+          fi
+          
+          # Verificar arquivo do Job C
+          if [ -f "final/job-c/job-c-file.txt" ]; then
+            echo "✅ Job C file present"
+          else
+            echo "❌ Job C file missing"
+          fi
+      
+      # Opcional: Criar um artefato consolidado
+      - name: Create consolidated artifact
+        run: |
+          mkdir -p consolidated
+          cp -r final/job-a/* consolidated/
+          cp -r final/job-b/* consolidated/
+          cp -r final/job-c/* consolidated/
+          echo "Consolidated by Job D at $(date)" > consolidated/consolidation-info.txt
+      
+      - name: Upload consolidated artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidated-artifact
+          path: consolidated
+          retention-days: 1
+          if-no-files-found: error
