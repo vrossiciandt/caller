@@ -48,12 +48,11 @@ jobs:
           echo "Job B starts downloading artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
       - name: Download artifacts
-        run: |
-          echo "Starting download for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
+
       - name: Log download completion time
         run: |
           echo "Completed download for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
@@ -84,6 +83,10 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+      - name: Log download completion time
+        run: |
+          echo "Completed upload for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
   job-c:
     name: Job C - Process Artifact
     needs: job-a
@@ -94,12 +97,11 @@ jobs:
           echo "Job C starts downloading artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
       - name: Download artifacts
-        run: |
-          echo "Starting download for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
+
       - name: Log download completion time
         run: |
           echo "Completed download for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
@@ -130,6 +132,10 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+      - name: Log upload completion time
+        run: |
+          echo "Completed upload for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
   job-d:
     name: Job D - Final Processing
     needs: [job-b, job-c]
@@ -139,14 +145,12 @@ jobs:
         run: |
           echo "Job D starts downloading final artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
-      - name: Download Final Artifact
-        run: |
-          echo "Starting final download at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+      - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
-          path: final-data
+
       - name: Log final download completion time
         run: |
           echo "Completed final download at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
