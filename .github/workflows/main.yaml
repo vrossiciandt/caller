@@ -24,9 +24,11 @@ jobs:
           mkdir -p artifact-data
           echo "This is file 1 from Job A" > artifact-data/file1.txt
           echo "This is file 2 from Job A" > artifact-data/file2.txt
-          echo "Job A execution time: $(date)" > artifact-data/job-a-info.txt
+          echo "Job A execution time: $(date +'%Y-%m-%d %H:%M:%S.%3N')" > artifact-data/job-a-info.txt
           
       - name: Upload artifact
+        run: |
+          echo "Uploading artifacts for Job A at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/upload-artifact@v4
         with:
           name: my-prefix-job-a
@@ -44,10 +46,15 @@ jobs:
           echo "Job B starts downloading artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
       - name: Download artifacts
+        run: |
+          echo "Starting download for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
+      - name: Log download completion time
+        run: |
+          echo "Completed download for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
       - name: List downloaded files
         run: |
@@ -64,6 +71,8 @@ jobs:
           echo "Job B processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-b-info.txt
 
       - name: Upload artifact
+        run: |
+          echo "Uploading artifacts for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/upload-artifact@v4
         with:
           name: integration-manager-job-b
@@ -76,16 +85,20 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-
       - name: Log start time
         run: |
           echo "Job C starts downloading artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
       - name: Download artifacts
+        run: |
+          echo "Starting download for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
+      - name: Log download completion time
+        run: |
+          echo "Completed download for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
 
       - name: List downloaded files
         run: |
@@ -102,6 +115,8 @@ jobs:
           echo "Job C processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-c-info.txt
 
       - name: Upload artifact
+        run: |
+          echo "Uploading artifacts for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/upload-artifact@v4
         with:
           name: integration-manager-job-c
@@ -114,13 +129,22 @@ jobs:
     needs: [job-b, job-c]
     runs-on: ubuntu-latest
     steps:
+      - name: Log start time for download
+        run: |
+          echo "Job D starts downloading final artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
       - name: Download Final Artifact
+        run: |
+          echo "Starting final download at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
           path: final-data
-      
+      - name: Log final download completion time
+        run: |
+          echo "Completed final download at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
       - name: Analyze final artifact content
         run: |
           echo "Final artifact contents:"
