@@ -26,9 +26,11 @@ jobs:
           echo "This is file 2 from Job A" > artifact-data/file2.txt
           echo "Job A execution time: $(date +'%Y-%m-%d %H:%M:%S.%3N')" > artifact-data/job-a-info.txt
           
-      - name: Upload artifact
+      - name: Log Upload Artifact Time
         run: |
           echo "Uploading artifacts for Job A at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: my-prefix-job-a
@@ -70,12 +72,14 @@ jobs:
           echo "This is a file added by Job B" > artifact-data/job-b-file.txt
           echo "Job B processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-b-info.txt
 
-      - name: Upload artifact
+      - name: Log Upload Artifact Time
         run: |
           echo "Uploading artifacts for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager-job-b
+          name: my-prefix-job-a
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -114,12 +118,14 @@ jobs:
           echo "This is a file added by Job C" > artifact-data/job-c-file.txt
           echo "Job C processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-c-info.txt
 
-      - name: Upload artifact
+      - name: Log Upload Artifact Time
         run: |
           echo "Uploading artifacts for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager-job-c
+          name: my-prefix-job-a
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
