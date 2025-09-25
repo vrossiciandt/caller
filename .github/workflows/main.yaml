@@ -6,7 +6,7 @@ on:
         required: true
         type: string
         description: "test"
-        default: "integration-manager"
+        default: "my-prefix"
 
 jobs:
   job-a:
@@ -29,7 +29,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager-job-a
+          name: my-prefix-job-a
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -39,6 +39,10 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
+      - name: Log start time
+        run: |
+          echo "Job B starts downloading artifacts at: $(date)"
+
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
@@ -52,17 +56,17 @@ jobs:
           tree
           echo "#============="
           ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
-      
+
       - name: Add Job B content
         run: |
           mkdir -p artifact-data
           echo "This is a file added by Job B" > artifact-data/job-b-file.txt
           echo "Job B processed this artifact at: $(date)" >> artifact-data/job-b-info.txt
-          
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager-job-b
+          name: my-prefix-job-b
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
@@ -72,16 +76,16 @@ jobs:
     needs: job-a
     runs-on: ubuntu-latest
     steps:
-      - name: Wait
+      - name: Log start time
         run: |
-          sleep 2
+          echo "Job C starts downloading artifacts at: $(date)"
 
       - name: Download artifacts
         uses: actions/download-artifact@v5
         with:
           pattern: ${{ inputs.app-name }}-*
           merge-multiple: true
-      
+
       - name: List downloaded files
         run: |
           echo "Files downloaded in Job C:"
@@ -89,17 +93,17 @@ jobs:
           tree
           echo "#============="
           ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
-      
+
       - name: Add Job C content
         run: |
           mkdir -p artifact-data
           echo "This is a file added by Job C" > artifact-data/job-c-file.txt
           echo "Job C processed this artifact at: $(date)" >> artifact-data/job-c-info.txt
-          
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: integration-manager-job-c
+          name: my-prefix-job-c
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
