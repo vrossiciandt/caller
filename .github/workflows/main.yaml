@@ -38,6 +38,7 @@ jobs:
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
+          overwrite: true
 
   job-b:
     name: Job B - Process Artifact
@@ -86,6 +87,7 @@ jobs:
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
+          overwrite: true
 
       - name: Log download completion time
         run: |
@@ -139,6 +141,7 @@ jobs:
           path: artifact-data
           retention-days: 1
           if-no-files-found: ignore
+          overwrite: true
 
       - name: Log upload completion time
         run: |
