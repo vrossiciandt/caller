@@ -1,209 +1,301 @@
-name: Artifact Demo
+name: caller
+
 on:
   workflow_dispatch:
-    inputs:
-      app-name:
-        required: true
-        type: string
-        description: "app-name"
-        default: "my-prefix"
 
 jobs:
   job-a:
-    name: Job A - Generate Artifact
+    name: Job A
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v5
-        with:
-          pattern: ${{ inputs.app-name }}-*
-          merge-multiple: true
+    - name: artifact-generate
+      run: |
+        mkdir -p artifact-data
+        echo "test" > artifact-data/test.txt
+        echo "Job A - Artifact criado em: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z') (UTC: $(date -u '+%Y-%m-%d %H:%M:%S.%3N'))"
+      shell: bash
+      if: always()
 
-      - name: Create test files
-        run: |
-          mkdir -p artifact-data
-          echo "This is file 1 from Job A" > artifact-data/file1.txt
-          echo "This is file 2 from Job A" > artifact-data/file2.txt
-          echo "Job A execution time: $(date +'%Y-%m-%d %H:%M:%S.%3N')" > artifact-data/job-a-info.txt
-          
-      - name: Log Upload Artifact Time
-        run: |
-          echo "Uploading artifacts for Job A at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
+    - name: upload-artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifact-a
+        path: artifact-data
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-prefix-job-a
-          path: artifact-data
-          retention-days: 1
-          if-no-files-found: ignore
-          overwrite: true
+    - name: upload-confirmation
+      run: |
+        echo "Job A - Upload concluído em: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z') (UTC: $(date -u '+%Y-%m-%d %H:%M:%S.%3N'))"
+        echo "Job A - Runner: $RUNNER_NAME"
+        echo "Job A - GitHub Run ID: $GITHUB_RUN_ID"
+        echo "Job A - GitHub Run Number: $GITHUB_RUN_NUMBER"
+      if: always()
 
   job-b:
-    name: Job B - Process Artifact
-    needs: job-a
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log start time
-        run: |
-          echo "Job B starts downloading artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
+   name: Job B
+   needs: job-a
+   runs-on: ubuntu-latest
+   steps:
+    - name: pre-download-info
+      run: |
+        echo "================================================"
+        echo "JOB B - INICIANDO DOWNLOAD"
+        echo "================================================"
+        echo "Job B - Horário de início do download: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        echo "Job B - UTC: $(date -u '+%Y-%m-%d %H:%M:%S.%3N')"
+        echo "Job B - Timestamp Unix (ms): $(($(date +%s%N)/1000000))"
+        echo "Job B - Runner: $RUNNER_NAME"
+        echo "Job B - GitHub Run ID: $GITHUB_RUN_ID"
+        echo "Job B - Artifact procurado: artifact-a"
+        echo "Job B - PID do processo: $$"
+        echo "================================================"
+      if: always()
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v5
-        with:
-          pattern: ${{ inputs.app-name }}-*
-          merge-multiple: true
+    - name: validate-artifact-existence
+      run: |
+        echo "================================================"
+        echo "JOB B - VALIDANDO EXISTÊNCIA DO ARTEFATO"
+        echo "================================================"
+        echo "Job B - Timestamp de validação: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        
+        # Usar GitHub API para listar artifacts
+        ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts")
+        
+        echo "Resposta completa da API:"
+        echo "$ARTIFACTS_RESPONSE" | jq '.' || echo "$ARTIFACTS_RESPONSE"
+        
+        # Verificar se o artifact existe
+        ARTIFACT_COUNT=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts | map(select(.name == "artifact-a")) | length' 2>/dev/null || echo "0")
+        
+        echo "Job B - Número de artifacts 'artifact-a' encontrados: $ARTIFACT_COUNT"
+        
+        if [ "$ARTIFACT_COUNT" -gt 0 ]; then
+          echo "✅ Job B - Artefato 'artifact-a' encontrado!"
+          
+          # Obter detalhes do artifact
+          ARTIFACT_INFO=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts[] | select(.name == "artifact-a")' 2>/dev/null)
+          echo "Job B - Detalhes do artefato:"
+          echo "$ARTIFACT_INFO" | jq '.' || echo "$ARTIFACT_INFO"
+          
+          ARTIFACT_SIZE=$(echo "$ARTIFACT_INFO" | jq -r '.size_in_bytes' 2>/dev/null || echo "unknown")
+          ARTIFACT_ID=$(echo "$ARTIFACT_INFO" | jq -r '.id' 2>/dev/null || echo "unknown")
+          CREATED_AT=$(echo "$ARTIFACT_INFO" | jq -r '.created_at' 2>/dev/null || echo "unknown")
+          
+          echo "Job B - Artifact ID: $ARTIFACT_ID"
+          echo "Job B - Tamanho: $ARTIFACT_SIZE bytes"
+          echo "Job B - Criado em: $CREATED_AT"
+          echo "Job B - Status: ARTIFACT VALIDADO COM SUCESSO"
+        else
+          echo "❌ Job B - Artefato 'artifact-a' NÃO ENCONTRADO!"
+          echo "Job B - Status: FALHA NA VALIDAÇÃO"
+          exit 1
+        fi
+        
+        echo "================================================"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log download completion time
-        run: |
-          echo "Completed download for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
+    - name: download-artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: artifact-a
+        path: artifact-data
 
-      - name: List downloaded files
-        run: |
-          echo "Files downloaded in Job B:"
-          ls -la
-          tree
-          echo "#============="
-          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
+    - name: post-download-info
+      run: |
+        echo "================================================"
+        echo "JOB B - DOWNLOAD CONCLUÍDO"
+        echo "================================================"
+        echo "Job B - Horário de fim do download: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        echo "Job B - UTC: $(date -u '+%Y-%m-%d %H:%M:%S.%3N')"
+        echo "Job B - Timestamp Unix (ms): $(($(date +%s%N)/1000000))"
+        echo "Job B - Status do download: SUCESSO"
+        echo "Job B - Runner: $RUNNER_NAME"
+        echo "================================================"
+      if: always()
 
-      - name: Add Job B content
-        run: |
-          mkdir -p artifact-data
-          echo "This is a file added by Job B" > artifact-data/job-b-file.txt
-          echo "Job B processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-b-info.txt
+    - name: display-artifacts
+      run: |
+        echo "Job B - Verificando conteúdo baixado:"
+        echo "Estrutura de diretórios:"
+        tree || find . -type f -exec ls -la {} \;
+        echo ""
+        echo "Listagem detalhada:"
+        ls -la
+        echo ""
+        echo "Conteúdo do arquivo (se existir):"
+        if [ -f "artifact-data/test.txt" ]; then
+          echo "Arquivo encontrado! Conteúdo:"
+          cat artifact-data/test.txt
+          echo "Tamanho do arquivo: $(stat -c%s artifact-data/test.txt) bytes"
+          echo "Última modificação: $(stat -c%y artifact-data/test.txt)"
+          
+          # Validação de integridade do conteúdo
+          echo "Job B - Hash MD5 do arquivo: $(md5sum artifact-data/test.txt | cut -d' ' -f1)"
+          echo "Job B - Hash SHA256 do arquivo: $(sha256sum artifact-data/test.txt | cut -d' ' -f1)"
+        else
+          echo "ERRO: Arquivo artifact-data/test.txt não encontrado!"
+        fi
+        
+        # Verificar integridade geral do diretório
+        echo "Job B - Hash MD5 de todos os arquivos no diretório:"
+        find artifact-data -type f -exec md5sum {} \; 2>/dev/null || echo "Nenhum arquivo encontrado para hash"
+    - name: Add Job B content
+      run: |
+        mkdir -p artifact-data
+         echo "This is a file added by Job B" > artifact-data/job-b-file.txt
+         echo "Job B processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-b-info.txt
+    - name: Log Upload Artifact Time
+      run: |
+        echo "Uploading artifacts for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+      if: always()
 
-      - name: Log Upload Artifact Time
-        run: |
-          echo "Uploading artifacts for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifact-a
+        path: artifact-data
+        retention-days: 1
+        if-no-files-found: ignore
+        overwrite: true
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-prefix-job-a
-          path: artifact-data
-          retention-days: 1
-          if-no-files-found: ignore
-          overwrite: true
-
-      - name: Log download completion time
-        run: |
-          echo "Completed upload for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
+    - name: Log upload completion time
+      run: |
+        echo "Completed upload for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+      if: always()
 
   job-c:
-    name: Job C - Process Artifact
-    needs: job-a
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log start time
-        run: |
-          echo "Job C starts downloading artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
+   name: Job C
+   needs: job-a
+   runs-on: ubuntu-latest
+   steps:
+    - name: pre-download-info
+      run: |
+        echo "================================================"
+        echo "JOB C - INICIANDO DOWNLOAD"
+        echo "================================================"
+        echo "Job C - Horário de início do download: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        echo "Job C - UTC: $(date -u '+%Y-%m-%d %H:%M:%S.%3N')"
+        echo "Job C - Timestamp Unix (ms): $(($(date +%s%N)/1000000))"
+        echo "Job C - Runner: $RUNNER_NAME"
+        echo "Job C - GitHub Run ID: $GITHUB_RUN_ID"
+        echo "Job C - Artifact procurado: artifact-a"
+        echo "Job C - PID do processo: $$"
+        echo "================================================"
+      if: always()
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v5
-        with:
-          pattern: ${{ inputs.app-name }}-*
-          merge-multiple: true
-
-      - name: Log download completion time
-        run: |
-          echo "Completed download for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
-
-      - name: List downloaded files
-        run: |
-          echo "Files downloaded in Job C:"
-          ls -la
-          tree
-          echo "#============="
-          ls -la artifact-data/ || echo "Directory is empty or doesn't exist"
-
-      - name: Add Job C content
-        run: |
-          mkdir -p artifact-data
-          echo "This is a file added by Job C" > artifact-data/job-c-file.txt
-          echo "Job C processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-c-info.txt
-
-      - name: Log Upload Artifact Time
-        run: |
-          echo "Uploading artifacts for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-prefix-job-a
-          path: artifact-data
-          retention-days: 1
-          if-no-files-found: ignore
-          overwrite: true
-
-      - name: Log upload completion time
-        run: |
-          echo "Completed upload for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
-
-  job-d:
-    name: Job D - Final Processing
-    needs: [job-b, job-c]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log start time for download
-        run: |
-          echo "Job D starts downloading final artifacts at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v5
-        with:
-          pattern: ${{ inputs.app-name }}-*
-          merge-multiple: true
-
-      - name: Log final download completion time
-        run: |
-          echo "Completed final download at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
-        if: always()
-
-      - name: Analyze final artifact content
-        run: |
-          echo "Final artifact contents:"
-          tree
-          echo "#========================================="
-          ls -la final-data/ || echo "Directory is empty or doesn't exist"
+    - name: validate-artifact-existence
+      run: |
+        echo "================================================"
+        echo "JOB C - VALIDANDO EXISTÊNCIA DO ARTEFATO"
+        echo "================================================"
+        echo "Job C - Timestamp de validação: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        
+        # Usar GitHub API para listar artifacts
+        ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts")
+        
+        echo "Resposta completa da API:"
+        echo "$ARTIFACTS_RESPONSE" | jq '.' || echo "$ARTIFACTS_RESPONSE"
+        
+        # Verificar se o artifact existe
+        ARTIFACT_COUNT=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts | map(select(.name == "artifact-a")) | length' 2>/dev/null || echo "0")
+        
+        echo "Job C - Número de artifacts 'artifact-a' encontrados: $ARTIFACT_COUNT"
+        
+        if [ "$ARTIFACT_COUNT" -gt 0 ]; then
+          echo "✅ Job C - Artefato 'artifact-a' encontrado!"
           
-          if [ -d "final-data" ] && [ "$(ls -A final-data 2>/dev/null)" ]; then
-            echo ""
-            echo "Contents of files:"
-            cat final-data/*.txt || echo "No text files found"
-            
-            echo ""
-            echo "Checking for expected files..."
-            
-            # Verificar arquivos do Job A
-            if [ -f "final-data/file1.txt" ] && [ -f "final-data/file2.txt" ]; then
-              echo "✅ Job A files present"
-            else
-              echo "❌ Job A files missing"
-            fi
-            
-            # Verificar arquivo do Job B
-            if [ -f "final-data/job-b-file.txt" ]; then
-              echo "✅ Job B file present"
-            else
-              echo "❌ Job B file missing"
-            fi
-            
-            # Verificar arquivo do Job C
-            if [ -f "final-data/job-c-file.txt" ]; then
-              echo "✅ Job C file present"
-            else
-              echo "❌ Job C file missing"
-            fi
-          else
-            echo "::warning::No files to analyze"
-          fi
+          # Obter detalhes do artifact
+          ARTIFACT_INFO=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts[] | select(.name == "artifact-a")' 2>/dev/null)
+          echo "Job C - Detalhes do artefato:"
+          echo "$ARTIFACT_INFO" | jq '.' || echo "$ARTIFACT_INFO"
+          
+          ARTIFACT_SIZE=$(echo "$ARTIFACT_INFO" | jq -r '.size_in_bytes' 2>/dev/null || echo "unknown")
+          ARTIFACT_ID=$(echo "$ARTIFACT_INFO" | jq -r '.id' 2>/dev/null || echo "unknown")
+          CREATED_AT=$(echo "$ARTIFACT_INFO" | jq -r '.created_at' 2>/dev/null || echo "unknown")
+          
+          echo "Job C - Artifact ID: $ARTIFACT_ID"
+          echo "Job C - Tamanho: $ARTIFACT_SIZE bytes"
+          echo "Job C - Criado em: $CREATED_AT"
+          echo "Job C - Status: ARTIFACT VALIDADO COM SUCESSO"
+        else
+          echo "❌ Job C - Artefato 'artifact-a' NÃO ENCONTRADO!"
+          echo "Job C - Status: FALHA NA VALIDAÇÃO"
+          exit 1
+        fi
+        
+        echo "================================================"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: download-artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: artifact-a
+        path: artifact-data
+
+    - name: post-download-info
+      run: |
+        echo "================================================"
+        echo "JOB C - DOWNLOAD CONCLUÍDO"
+        echo "================================================"
+        echo "Job C - Horário de fim do download: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        echo "Job C - UTC: $(date -u '+%Y-%m-%d %H:%M:%S.%3N')"
+        echo "Job C - Timestamp Unix (ms): $(($(date +%s%N)/1000000))"
+        echo "Job C - Status do download: SUCESSO"
+        echo "Job C - Runner: $RUNNER_NAME"
+        echo "================================================"
+      if: always()
+
+    - name: display-artifacts
+      run: |
+        echo "Job C - Verificando conteúdo baixado:"
+        echo "Estrutura de diretórios:"
+        tree || find . -type f -exec ls -la {} \;
+        echo ""
+        echo "Listagem detalhada:"
+        ls -la
+        echo ""
+        echo "Conteúdo do arquivo (se existir):"
+        if [ -f "artifact-data/test.txt" ]; then
+          echo "Arquivo encontrado! Conteúdo:"
+          cat artifact-data/test.txt
+          echo "Tamanho do arquivo: $(stat -c%s artifact-data/test.txt) bytes"
+          echo "Última modificação: $(stat -c%y artifact-data/test.txt)"
+          
+          # Validação de integridade do conteúdo
+          echo "Job C - Hash MD5 do arquivo: $(md5sum artifact-data/test.txt | cut -d' ' -f1)"
+          echo "Job C - Hash SHA256 do arquivo: $(sha256sum artifact-data/test.txt | cut -d' ' -f1)"
+        else
+          echo "ERRO: Arquivo artifact-data/test.txt não encontrado!"
+        fi
+        
+        # Verificar integridade geral do diretório
+        echo "Job C - Hash MD5 de todos os arquivos no diretório:"
+        find artifact-data -type f -exec md5sum {} \; 2>/dev/null || echo "Nenhum arquivo encontrado para hash"
+    - name: Add Job C content
+      run: |
+        mkdir -p artifact-data
+         echo "This is a file added by Job C" > artifact-data/job-c-file.txt
+         echo "Job C processed this artifact at: $(date +'%Y-%m-%d %H:%M:%S.%3N')" >> artifact-data/job-c-info.txt
+    - name: Log Upload Artifact Time
+      run: |
+        echo "Uploading artifacts for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+      if: always()
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifact-a
+        path: artifact-data
+        retention-days: 1
+        if-no-files-found: ignore
+        overwrite: true
+
+    - name: Log upload completion time
+      run: |
+        echo "Completed upload for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
+      if: always()
