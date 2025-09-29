@@ -165,6 +165,52 @@ jobs:
         echo "Completed upload for Job B at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
       if: always()
 
+    - name: validate-artifact-existence
+      run: |
+        echo "================================================"
+        echo "JOB B - VALIDANDO EXISTÊNCIA DO ARTEFATO"
+        echo "================================================"
+        echo "Job B - Timestamp de validação: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        
+        # Usar GitHub API para listar artifacts
+        ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts")
+        
+        echo "Resposta completa da API:"
+        echo "$ARTIFACTS_RESPONSE" | jq '.' || echo "$ARTIFACTS_RESPONSE"
+        
+        # Verificar se o artifact existe
+        ARTIFACT_COUNT=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts | map(select(.name == "artifact-a")) | length' 2>/dev/null || echo "0")
+        
+        echo "Job B - Número de artifacts 'artifact-a' encontrados: $ARTIFACT_COUNT"
+        
+        if [ "$ARTIFACT_COUNT" -gt 0 ]; then
+          echo "✅ Job B - Artefato 'artifact-a' encontrado!"
+          
+          # Obter detalhes do artifact
+          ARTIFACT_INFO=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts[] | select(.name == "artifact-a")' 2>/dev/null)
+          echo "Job B - Detalhes do artefato:"
+          echo "$ARTIFACT_INFO" | jq '.' || echo "$ARTIFACT_INFO"
+          
+          ARTIFACT_SIZE=$(echo "$ARTIFACT_INFO" | jq -r '.size_in_bytes' 2>/dev/null || echo "unknown")
+          ARTIFACT_ID=$(echo "$ARTIFACT_INFO" | jq -r '.id' 2>/dev/null || echo "unknown")
+          CREATED_AT=$(echo "$ARTIFACT_INFO" | jq -r '.created_at' 2>/dev/null || echo "unknown")
+          
+          echo "Job B - Artifact ID: $ARTIFACT_ID"
+          echo "Job B - Tamanho: $ARTIFACT_SIZE bytes"
+          echo "Job B - Criado em: $CREATED_AT"
+          echo "Job B - Status: ARTIFACT VALIDADO COM SUCESSO"
+        else
+          echo "❌ Job B - Artefato 'artifact-a' NÃO ENCONTRADO!"
+          echo "Job B - Status: FALHA NA VALIDAÇÃO"
+          exit 1
+        fi
+        
+        echo "================================================"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   job-c:
    name: Job C
    needs: job-a
@@ -299,3 +345,49 @@ jobs:
       run: |
         echo "Completed upload for Job C at: $(date +'%Y-%m-%d %H:%M:%S.%3N')"
       if: always()
+
+    - name: validate-artifact-existence
+      run: |
+        echo "================================================"
+        echo "JOB C - VALIDANDO EXISTÊNCIA DO ARTEFATO"
+        echo "================================================"
+        echo "Job C - Timestamp de validação: $(date '+%Y-%m-%d %H:%M:%S.%3N %Z')"
+        
+        # Usar GitHub API para listar artifacts
+        ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts")
+        
+        echo "Resposta completa da API:"
+        echo "$ARTIFACTS_RESPONSE" | jq '.' || echo "$ARTIFACTS_RESPONSE"
+        
+        # Verificar se o artifact existe
+        ARTIFACT_COUNT=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts | map(select(.name == "artifact-a")) | length' 2>/dev/null || echo "0")
+        
+        echo "Job C - Número de artifacts 'artifact-a' encontrados: $ARTIFACT_COUNT"
+        
+        if [ "$ARTIFACT_COUNT" -gt 0 ]; then
+          echo "✅ Job C - Artefato 'artifact-a' encontrado!"
+          
+          # Obter detalhes do artifact
+          ARTIFACT_INFO=$(echo "$ARTIFACTS_RESPONSE" | jq '.artifacts[] | select(.name == "artifact-a")' 2>/dev/null)
+          echo "Job C - Detalhes do artefato:"
+          echo "$ARTIFACT_INFO" | jq '.' || echo "$ARTIFACT_INFO"
+          
+          ARTIFACT_SIZE=$(echo "$ARTIFACT_INFO" | jq -r '.size_in_bytes' 2>/dev/null || echo "unknown")
+          ARTIFACT_ID=$(echo "$ARTIFACT_INFO" | jq -r '.id' 2>/dev/null || echo "unknown")
+          CREATED_AT=$(echo "$ARTIFACT_INFO" | jq -r '.created_at' 2>/dev/null || echo "unknown")
+          
+          echo "Job C - Artifact ID: $ARTIFACT_ID"
+          echo "Job C - Tamanho: $ARTIFACT_SIZE bytes"
+          echo "Job C - Criado em: $CREATED_AT"
+          echo "Job C - Status: ARTIFACT VALIDADO COM SUCESSO"
+        else
+          echo "❌ Job C - Artefato 'artifact-a' NÃO ENCONTRADO!"
+          echo "Job C - Status: FALHA NA VALIDAÇÃO"
+          exit 1
+        fi
+        
+        echo "================================================"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
