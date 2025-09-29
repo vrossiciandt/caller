@@ -95,6 +95,7 @@ jobs:
         echo "================================================"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
 
     - name: download-artifact
       uses: actions/download-artifact@v5
@@ -210,6 +211,7 @@ jobs:
         echo "================================================"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
 
   job-c:
    name: Job C
@@ -276,6 +278,7 @@ jobs:
         echo "================================================"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
 
     - name: download-artifact
       uses: actions/download-artifact@v5
@@ -391,3 +394,4 @@ jobs:
         echo "================================================"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
